@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Important Question</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    body {
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        background: radial-gradient(circle at top, #1f2937, #020617);
+        color: white;
+        overflow: hidden;
+        touch-action: manipulation;
+    }
+
+    h1 {
+        margin-bottom: 30px;
+        text-align: center;
+        padding: 0 20px;
+    }
+
+    .buttons {
+        position: relative;
+        width: 90vw;
+        max-width: 350px;
+        height: 300px;
+    }
+
+    button {
+        padding: 14px 28px;
+        font-size: 18px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        position: absolute;
+        transition: transform 0.15s ease;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    #yesBtn {
+        left: 20%;
+        top: 60%;
+        background: #22c55e;
+        color: #022c22;
+        font-weight: 600;
+    }
+
+    #noBtn {
+        left: 60%;
+        top: 60%;
+        background: #ef4444;
+        color: #450a0a;
+        font-weight: 600;
+    }
+</style>
+</head>
+<body>
+
+<h1>Do you like this website?</h1>
+
+<div class="buttons">
+    <button id="yesBtn">Yes</button>
+    <button id="noBtn">No</button>
+</div>
+
+<script>
+const noBtn = document.getElementById("noBtn");
+const yesBtn = document.getElementById("yesBtn");
+const container = document.querySelector(".buttons");
+
+let yesScale = 1;
+
+// ---- NO BUTTON EVASION ----
+function moveNoButton() {
+    const maxX = container.clientWidth - noBtn.offsetWidth;
+    const maxY = container.clientHeight - noBtn.offsetHeight;
+
+    const randomX = Math.random() * maxX;
+    const randomY = Math.random() * maxY;
+
+    noBtn.style.left = randomX + "px";
+    noBtn.style.top = randomY + "px";
+}
+
+// Desktop hover
+noBtn.addEventListener("mouseover", moveNoButton);
+
+// Mobile touch
+noBtn.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    moveNoButton();
+});
+
+// Also dodge when finger gets close (mobile magic)
+document.addEventListener("touchmove", (e) => {
+    const touch = e.touches[0];
+    const btnRect = noBtn.getBoundingClientRect();
+
+    const dx = touch.clientX - (btnRect.left + btnRect.width / 2);
+    const dy = touch.clientY - (btnRect.top + btnRect.height / 2);
+    const distance = Math.sqrt(dx*dx + dy*dy);
+
+    if (distance < 80) {
+        moveNoButton();
+    }
+}, { passive: false });
+
+
+// ---- YES BUTTON GROWTH ----
+yesBtn.addEventListener("click", () => {
+    yesScale += 0.15;
+    yesBtn.style.transform = `scale(${yesScale})`;
+
+    if (yesScale > 2.2) {
+        document.body.innerHTML = `
+            <h1 style="text-align:center;">You were always going to say yes 😌💚</h1>
+        `;
+    }
+});
+</script>
+
+</body>
+</html>
