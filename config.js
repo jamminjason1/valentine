@@ -1,5 +1,5 @@
 const CONFIG = {
-    mainQuestion: "Will you be my Valentine? 💌",
+    mainQuestion: "Will you be my Valentine? 💌 <br> (Dare you to say no) ",
     yesButtonText: "Yes",
     noButtonText: "No",
 
