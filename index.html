@@ -6,83 +6,98 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    body {
-        height: 100vh;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-        background: radial-gradient(circle at top, #1f2937, #020617);
-        color: white;
-        overflow: hidden;
-        touch-action: manipulation;
-    }
+body {
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: radial-gradient(circle at top, #1f2937, #020617);
+    color: white;
+    overflow: hidden;
+    touch-action: manipulation;
+}
 
-    h1 {
-        margin-bottom: 30px;
-        text-align: center;
-        padding: 0 20px;
-    }
+h1 {
+    margin-bottom: 30px;
+    text-align: center;
+    padding: 0 20px;
+}
 
-    .buttons {
-        position: relative;
-        width: 90vw;
-        max-width: 360px;
-        height: 320px;
-    }
+.buttons {
+    position: relative;
+    width: 90vw;
+    max-width: 360px;
+    height: 320px;
+}
 
-    button {
-        padding: 14px 28px;
-        font-size: 18px;
-        border-radius: 12px;
-        border: none;
-        cursor: pointer;
-        position: absolute;
-        user-select: none;
-        -webkit-tap-highlight-color: transparent;
-        transition: transform 0.2s ease;
-        font-weight: 600;
-    }
+button {
+    padding: 14px 28px;
+    font-size: 18px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.2s ease;
+    font-weight: 600;
+}
 
-    #yesBtn {
-        left: 20%;
-        top: 65%;
-        background: #22c55e;
-        color: #022c22;
-        z-index: 2;
-    }
+#yesBtn {
+    left: 20%;
+    top: 65%;
+    background: #22c55e;
+    color: #022c22;
+    z-index: 2;
+}
 
-    #noBtn {
-        left: 60%;
-        top: 65%;
-        background: #ef4444;
-        color: #450a0a;
-        z-index: 1;
-    }
+#noBtn {
+    left: 60%;
+    top: 65%;
+    background: #ef4444;
+    color: #450a0a;
+    z-index: 1;
+}
 
-    .popup {
-        position: fixed;
-        bottom: 40px;
-        background: rgba(0,0,0,0.85);
-        padding: 14px 22px;
-        border-radius: 12px;
-        font-size: 16px;
-        animation: fadeUp 0.4s ease;
-        pointer-events: none;
-    }
+.popup {
+    position: fixed;
+    bottom: 40px;
+    background: rgba(0,0,0,0.85);
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 16px;
+    animation: fadeUp 0.4s ease;
+    pointer-events: none;
+}
 
-    @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Confetti / hearts */
+.confetti {
+    position: fixed;
+    top: -10px;
+    font-size: 20px;
+    animation: fall 3s linear forwards;
+    pointer-events: none;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0;
     }
+}
 </style>
 </head>
 <body>
 
-<h1>Will you be my Valentine?
-      (Try and say no)</h1>
+<h1>Do you like this website?</h1>
 
 <div class="buttons">
     <button id="yesBtn">Yes</button>
@@ -96,12 +111,13 @@ const container = document.querySelector(".buttons");
 
 let yesScale = 1;
 let yesClicks = 0;
+let heartbeatSpeed = 200; // ms between vibrations
 
 const messages = [
     "a bit more.",
     "more excited than that.",
     "one last time.",
-    "okay last time to make sure you mean it"
+    "okay last time to make sure"
 ];
 
 // ---- NO BUTTON MOVEMENT ----
@@ -120,16 +136,13 @@ function moveNoButton() {
     yesBtn.style.transform = `scale(${yesScale})`;
 }
 
-// Desktop hover
 noBtn.addEventListener("mouseover", moveNoButton);
 
-// Mobile touch
 noBtn.addEventListener("touchstart", (e) => {
     e.preventDefault();
     moveNoButton();
 });
 
-// Proximity dodge
 document.addEventListener("touchmove", (e) => {
     const touch = e.touches[0];
     const btnRect = noBtn.getBoundingClientRect();
@@ -143,43 +156,66 @@ document.addEventListener("touchmove", (e) => {
     }
 }, { passive: false });
 
-// ---- YES BUTTON LOGIC ----
+// ---- YES BUTTON ----
 yesBtn.addEventListener("click", () => {
+
+    // Heartbeat haptic
+    if (navigator.vibrate) {
+        navigator.vibrate([30, heartbeatSpeed, 30]);
+    }
+    heartbeatSpeed = Math.max(60, heartbeatSpeed - 25); // faster heartbeat
+
     if (yesClicks < messages.length) {
         showPopup(messages[yesClicks]);
         yesClicks++;
     } else {
-        // FINAL TRANSFORMATION SCREEN
-        document.body.innerHTML = `
-            <div style="text-align:center; padding:40px;">
-                <h1>📍 Event Locked In</h1>
-                <p style="font-size:20px; margin-top:20px;">
-                    🗓 <strong>February 15, 2026</strong><br><br>
-                    ⏰ <strong>7:00 PM</strong><br><br>
-                    📍 <strong>Petrini's Italian</strong><br>
-                    San Diego, CA
-                </p>
-                <p style="margin-top:30px; opacity:0.8;">
-                    See ya soon, hottie
-                </p>
-            </div>
-        `;
+        revealEvent();
     }
 });
 
-// ---- POPUP FUNCTION ----
+// ---- POPUP ----
 function showPopup(text) {
     const popup = document.createElement("div");
     popup.className = "popup";
     popup.innerText = text;
     document.body.appendChild(popup);
+    setTimeout(() => popup.remove(), 1500);
+}
 
-    setTimeout(() => {
-        popup.remove();
-    }, 1500);
+// ---- EVENT REVEAL ----
+function revealEvent() {
+    document.body.innerHTML = `
+        <div style="text-align:center; padding:40px;">
+            <h1>💚 Event Locked In 💚</h1>
+            <p style="font-size:20px; margin-top:20px;">
+                🗓 <strong>February 15, 2026</strong><br><br>
+                ⏰ <strong>7:00 PM</strong><br><br>
+                📍 <strong>Petrini's Italian</strong><br>
+                San Diego, CA
+            </p>
+            <p style="margin-top:30px; opacity:0.8;">
+                See you soon, Hottie
+            </p>
+        </div>
+    `;
+    launchConfetti();
+}
+
+// ---- CONFETTI / HEARTS ----
+function launchConfetti() {
+    const emojis = ["💚","🎉","✨","💖","🎊","💫"];
+    for (let i = 0; i < 80; i++) {
+        const el = document.createElement("div");
+        el.className = "confetti";
+        el.innerText = emojis[Math.floor(Math.random()*emojis.length)];
+        el.style.left = Math.random()*100 + "vw";
+        el.style.animationDuration = (2 + Math.random()*2) + "s";
+        el.style.fontSize = (16 + Math.random()*20) + "px";
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
+    }
 }
 </script>
 
 </body>
 </html>
-
