@@ -41,7 +41,6 @@ button {
     cursor: pointer;
     position: absolute;
     user-select: none;
-    -webkit-tap-highlight-color: transparent;
     transition: transform 0.2s ease;
     font-weight: 600;
 }
@@ -78,7 +77,6 @@ button {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Confetti / hearts */
 .confetti {
     position: fixed;
     top: -10px;
@@ -97,42 +95,56 @@ button {
 </head>
 <body>
 
-<h1>Will you be my Valentine? <br> (Dare you to say no)</h1>
+<h1 id="mainQuestion"></h1>
 
 <div class="buttons">
-    <button id="yesBtn">Yes</button>
-    <button id="noBtn">No</button>
+    <button id="yesBtn"></button>
+    <button id="noBtn"></button>
 </div>
+
+<!-- CONFIG FILE -->
+<script src="config.js"></script>
 
 <script>
 const noBtn = document.getElementById("noBtn");
 const yesBtn = document.getElementById("yesBtn");
 const container = document.querySelector(".buttons");
 
+// Inject config values
+document.getElementById("mainQuestion").innerText = CONFIG.mainQuestion;
+yesBtn.innerText = CONFIG.yesButtonText;
+noBtn.innerText = CONFIG.noButtonText;
+
 let yesScale = 1;
 let yesClicks = 0;
-let heartbeatSpeed = 200; // ms between vibrations
+let heartbeatSpeed = 200;
+let noMoveCount = 0;
 
-const messages = [
-    "a bit more.",
-    "more excited than that.",
-    "one last time.",
-    "okay last time to make sure"
-];
+const messages = CONFIG.popupMessages;
 
 // ---- NO BUTTON MOVEMENT ----
 function moveNoButton() {
     const maxX = container.clientWidth - noBtn.offsetWidth;
     const maxY = container.clientHeight - noBtn.offsetHeight;
 
-    const randomX = Math.random() * maxX;
-    const randomY = Math.random() * maxY;
+    let randomX = Math.random() * maxX;
+    let randomY;
+
+    if (noMoveCount < 2) {
+        // First two moves = full container
+        randomY = Math.random() * maxY;
+    } else {
+        // After two moves = TOP HALF ONLY
+        randomY = Math.random() * (maxY / 2);
+    }
 
     noBtn.style.left = randomX + "px";
     noBtn.style.top = randomY + "px";
 
-    // Grow YES button when NO moves
-    yesScale += 0.8;
+    noMoveCount++;
+
+    // Grow YES button
+    yesScale += 0.08;
     yesBtn.style.transform = `scale(${yesScale})`;
 }
 
@@ -159,11 +171,11 @@ document.addEventListener("touchmove", (e) => {
 // ---- YES BUTTON ----
 yesBtn.addEventListener("click", () => {
 
-    // Heartbeat haptic
     if (navigator.vibrate) {
         navigator.vibrate([30, heartbeatSpeed, 30]);
     }
-    heartbeatSpeed = Math.max(60, heartbeatSpeed - 25); // faster heartbeat
+
+    heartbeatSpeed = Math.max(60, heartbeatSpeed - 25);
 
     if (yesClicks < messages.length) {
         showPopup(messages[yesClicks]);
@@ -186,24 +198,25 @@ function showPopup(text) {
 function revealEvent() {
     document.body.innerHTML = `
         <div style="text-align:center; padding:40px;">
-            <h1>💘 It's a Date 💘</h1>
+            <h1>${CONFIG.event.title}</h1>
             <p style="font-size:20px; margin-top:20px;">
-                🗓 <strong>February 15, 2026</strong><br><br>
-                ⏰ <strong>7:00 PM</strong><br><br>
-                📍 <strong>Petrini's Italian</strong><br>
-                San Diego, CA
+                🗓 <strong>${CONFIG.event.date}</strong><br><br>
+                ⏰ <strong>${CONFIG.event.time}</strong><br><br>
+                📍 <strong>${CONFIG.event.locationName}</strong><br>
+                ${CONFIG.event.locationCity}
             </p>
             <p style="margin-top:30px; opacity:0.8;">
-                See you soon, Hottie
+                ${CONFIG.event.footerText}
             </p>
         </div>
     `;
     launchConfetti();
 }
 
-// ---- CONFETTI / HEARTS ----
+// ---- CONFETTI ----
 function launchConfetti() {
-    const emojis = ["💘","🎉","✨","💖","🎊","💫"];
+    const emojis = CONFIG.confettiEmojis;
+
     for (let i = 0; i < 80; i++) {
         const el = document.createElement("div");
         el.className = "confetti";
