@@ -29,36 +29,53 @@
     .buttons {
         position: relative;
         width: 90vw;
-        max-width: 350px;
-        height: 300px;
+        max-width: 360px;
+        height: 320px;
     }
 
     button {
         padding: 14px 28px;
         font-size: 18px;
-        border-radius: 10px;
+        border-radius: 12px;
         border: none;
         cursor: pointer;
         position: absolute;
-        transition: transform 0.15s ease;
         user-select: none;
         -webkit-tap-highlight-color: transparent;
+        transition: transform 0.2s ease;
+        font-weight: 600;
     }
 
     #yesBtn {
         left: 20%;
-        top: 60%;
+        top: 65%;
         background: #22c55e;
         color: #022c22;
-        font-weight: 600;
+        z-index: 2;
     }
 
     #noBtn {
         left: 60%;
-        top: 60%;
+        top: 65%;
         background: #ef4444;
         color: #450a0a;
-        font-weight: 600;
+        z-index: 1;
+    }
+
+    .popup {
+        position: fixed;
+        bottom: 40px;
+        background: rgba(0,0,0,0.85);
+        padding: 14px 22px;
+        border-radius: 12px;
+        font-size: 16px;
+        animation: fadeUp 0.4s ease;
+        pointer-events: none;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 </style>
 </head>
@@ -77,8 +94,16 @@ const yesBtn = document.getElementById("yesBtn");
 const container = document.querySelector(".buttons");
 
 let yesScale = 1;
+let yesClicks = 0;
 
-// ---- NO BUTTON EVASION ----
+const messages = [
+    "a bit more.",
+    "more excited than that.",
+    "one last time.",
+    "okay last time to make sure"
+];
+
+// ---- NO BUTTON MOVEMENT ----
 function moveNoButton() {
     const maxX = container.clientWidth - noBtn.offsetWidth;
     const maxY = container.clientHeight - noBtn.offsetHeight;
@@ -88,6 +113,10 @@ function moveNoButton() {
 
     noBtn.style.left = randomX + "px";
     noBtn.style.top = randomY + "px";
+
+    // Grow YES button when NO moves
+    yesScale += 0.08;
+    yesBtn.style.transform = `scale(${yesScale})`;
 }
 
 // Desktop hover
@@ -99,7 +128,7 @@ noBtn.addEventListener("touchstart", (e) => {
     moveNoButton();
 });
 
-// Also dodge when finger gets close (mobile magic)
+// Proximity dodge
 document.addEventListener("touchmove", (e) => {
     const touch = e.touches[0];
     const btnRect = noBtn.getBoundingClientRect();
@@ -108,24 +137,48 @@ document.addEventListener("touchmove", (e) => {
     const dy = touch.clientY - (btnRect.top + btnRect.height / 2);
     const distance = Math.sqrt(dx*dx + dy*dy);
 
-    if (distance < 80) {
+    if (distance < 90) {
         moveNoButton();
     }
 }, { passive: false });
 
-
-// ---- YES BUTTON GROWTH ----
+// ---- YES BUTTON LOGIC ----
 yesBtn.addEventListener("click", () => {
-    yesScale += 0.15;
-    yesBtn.style.transform = `scale(${yesScale})`;
-
-    if (yesScale > 2.2) {
+    if (yesClicks < messages.length) {
+        showPopup(messages[yesClicks]);
+        yesClicks++;
+    } else {
+        // FINAL TRANSFORMATION SCREEN
         document.body.innerHTML = `
-            <h1 style="text-align:center;">You were always going to say yes 😌💚</h1>
+            <div style="text-align:center; padding:40px;">
+                <h1>📍 Event Locked In</h1>
+                <p style="font-size:20px; margin-top:20px;">
+                    🗓 <strong>March 22, 2026</strong><br><br>
+                    ⏰ <strong>7:00 PM</strong><br><br>
+                    📍 <strong>The Rooftop Lounge</strong><br>
+                    San Diego, CA
+                </p>
+                <p style="margin-top:30px; opacity:0.8;">
+                    No more buttons. Only destiny. ✨
+                </p>
+            </div>
         `;
     }
 });
+
+// ---- POPUP FUNCTION ----
+function showPopup(text) {
+    const popup = document.createElement("div");
+    popup.className = "popup";
+    popup.innerText = text;
+    document.body.appendChild(popup);
+
+    setTimeout(() => {
+        popup.remove();
+    }, 1500);
+}
 </script>
 
 </body>
 </html>
+
