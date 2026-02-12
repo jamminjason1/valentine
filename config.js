@@ -6,7 +6,7 @@ const CONFIG = {
     popupMessages: [
         "Are you sure?",
         "More excited than that",
-        "One more time",
+        "One last time",
         "Okay last time just to make sure"
     ],
 
